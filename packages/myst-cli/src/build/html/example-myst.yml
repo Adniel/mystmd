@@ -1,0 +1,19 @@
+# Example myst.yml configuration with html_file_suffix option
+version: 1
+project:
+  id: example-project
+  title: Example Project
+  description: A project demonstrating the html_file_suffix option
+  authors:
+    - name: Example Author
+      email: author@example.com
+
+site:
+  template: book-theme
+  title: Example Site
+  options:
+    # Set HTML file extension to .aspx for ASP.NET compatibility
+    html_file_suffix: .aspx
+    # Other common site options
+    favicon: favicon.ico
+    logo: logo.svg

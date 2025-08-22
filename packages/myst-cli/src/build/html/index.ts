@@ -11,6 +11,7 @@ import { getSiteTemplate } from '../site/template.js';
 import { slugToUrl } from 'myst-common';
 import pLimit from 'p-limit';
 import { fetchWithRetry } from '../../utils/fetchWithRetry.js';
+import { selectors } from '../../store/index.js';
 
 const limitConnections = pLimit(5);
 
@@ -18,9 +19,15 @@ export async function currentSiteRoutes(
   session: ISession,
   host: string,
   baseurl: string | undefined,
-  opts?: SiteManifestOptions,
+  opts?: SiteManifestOptions & { htmlExtension?: string },
 ): Promise<{ url: string; path: string; binary?: boolean }[]> {
   const manifest = await getSiteManifest(session, opts);
+  // Get htmlExtension from opts, then from site config, then default to .html
+  let htmlExtension = opts?.htmlExtension;
+  if (!htmlExtension) {
+    const siteConfig = selectors.selectCurrentSiteConfig(session.store.getState());
+    htmlExtension = siteConfig?.options?.html_file_suffix || '.html';
+  }
   return (manifest.projects ?? [])
     ?.map((proj) => {
       const projSlug = proj.slug ? `/${proj.slug}` : '';
@@ -30,12 +37,15 @@ export async function currentSiteRoutes(
       const siteIndex = baseurl ? `/${proj.index}` : '';
       const pages = proj.pages.filter((page) => !!page.slug);
       return [
-        { url: `${host}${projSlug}${siteIndex}`, path: path.join(proj.slug ?? '', 'index.html') },
+        {
+          url: `${host}${projSlug}${siteIndex}`,
+          path: path.join(proj.slug ?? '', `index${htmlExtension}`),
+        },
         ...pages.map((page) => {
           const pageSlug = slugToUrl(page.slug);
           return {
             url: `${host}${projSlug}/${pageSlug}`,
-            path: path.join(proj.slug ?? '', `${pageSlug}/index.html`),
+            path: path.join(proj.slug ?? '', `${pageSlug}/index${htmlExtension}`),
           };
         }),
         // Download all of the configured JSON
@@ -73,19 +83,24 @@ const ASSETS_FOLDER = 'myst_assets_folder';
  *
  * @param directory directory of files to recursively rewrite
  * @param baseurl base URL of the built site
+ * @param htmlExtension extension for HTML files (default: .html)
  */
-function rewriteAssetsFolder(directory: string, baseurl?: string): void {
+function rewriteAssetsFolder(
+  directory: string,
+  baseurl?: string,
+  htmlExtension: string = '.html',
+): void {
   fs.readdirSync(directory).forEach((filename) => {
     const file = path.join(directory, filename);
     if (fs.statSync(file).isDirectory()) {
-      rewriteAssetsFolder(file, baseurl);
+      rewriteAssetsFolder(file, baseurl, htmlExtension);
       return;
     }
     if (path.extname(file) === '.map') {
       fs.rmSync(file);
       return;
     }
-    if (!['.html', '.js', '.json'].includes(path.extname(file))) return;
+    if (![htmlExtension, '.js', '.json'].includes(path.extname(file))) return;
     const data = fs.readFileSync(file).toString();
     const modified = data.replace(
       new RegExp(`\\/${ASSETS_FOLDER}\\/`, 'g'),
@@ -130,7 +145,10 @@ function get_baseurl(session: ISession): string | undefined {
  * @param session session with logging
  * @param opts configuration options
  */
-export async function buildHtml(session: ISession, opts: StartOptions) {
+export async function buildHtml(
+  session: ISession,
+  opts: StartOptions & { htmlExtension?: string },
+) {
   const template = await getSiteTemplate(session, opts);
   // The BASE_URL env variable allows for mounting the site in a folder, e.g., github pages
   const baseurl = get_baseurl(session);
@@ -142,7 +160,10 @@ export async function buildHtml(session: ISession, opts: StartOptions) {
   const appServer = await startServer(session, { ...opts, buildStatic: true, baseurl });
   if (!appServer) return;
   const host = `http://localhost:${appServer.port}`;
-  const routes = await currentSiteRoutes(session, host, baseurl, opts);
+  const routes = await currentSiteRoutes(session, host, baseurl, {
+    ...opts,
+    htmlExtension: opts.htmlExtension,
+  });
 
   // Fetch all HTML pages and assets by the template
   await Promise.all(
@@ -195,7 +216,7 @@ export async function buildHtml(session: ISession, opts: StartOptions) {
   );
 
   // We need to go through and change all links to the right folder
-  rewriteAssetsFolder(htmlDir, baseurl);
+  rewriteAssetsFolder(htmlDir, baseurl, opts.htmlExtension || '.html');
 
   // Explicitly close the process as the web server doesn't always stop?
   process.exit(0);

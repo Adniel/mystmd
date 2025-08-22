@@ -66,6 +66,8 @@ export type ProcessFileOptions = {
   /** Execute flag for notebooks */
   execute?: boolean;
   maxSizeWebp?: number;
+  /** HTML file extension for static site generation */
+  htmlExtension?: string;
 };
 
 export type ProcessProjectOptions = ProcessFileOptions & {
@@ -350,12 +352,11 @@ export function selectPageReferenceStates(
         identifiers,
         previousCounts,
         vfile,
-        hidden,
       });
       if (frontmatter && !frontmatter.enumerator) {
         frontmatter.enumerator = state.enumerator;
       }
-      if (mdast) enumerateTargetsTransform(mdast, { state, hidden });
+      if (mdast) enumerateTargetsTransform(mdast, { state });
       previousCounts = state.targetCounts;
       logMessagesFromVFile(session, vfile);
       if (state) {

@@ -11,6 +11,7 @@ import {
   makeAllOption,
   makeNamedExportOption,
   makeHtmlOption,
+  makeHtmlExtensionOption,
   makeMecaOptions,
   makeMdOption,
   makeTypstOption,
@@ -38,6 +39,7 @@ export function makeBuildCommand() {
     .addOption(makeCffOption('Build CFF output'))
     .addOption(makeSiteOption(`Build ${readableName()} site content`))
     .addOption(makeHtmlOption('Build static HTML site content'))
+    .addOption(makeHtmlExtensionOption('Set HTML file extension (default: .html)'))
     .addOption(makeAllOption('Build all exports'))
     .addOption(makeDOIBibOption())
     .addOption(makeWatchOption())

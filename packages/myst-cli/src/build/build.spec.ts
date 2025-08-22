@@ -84,6 +84,9 @@ describe('exportSite', () => {
   it('opts.html exports site', async () => {
     expect(exportSite(session, { html: true, meca: false })).toEqual(true);
   });
+  it('opts.html with htmlExtension exports site', async () => {
+    expect(exportSite(session, { html: true, htmlExtension: '.aspx' })).toEqual(true);
+  });
   it('existing config exports site', async () => {
     expect(exportSite(sessionWithConfig, {})).toEqual(true);
   });

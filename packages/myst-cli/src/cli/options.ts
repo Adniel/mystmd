@@ -48,6 +48,10 @@ export function makeHtmlOption(description: string) {
   return new Option('--html', description).default(false);
 }
 
+export function makeHtmlExtensionOption(description: string) {
+  return new Option('--html-extension <extension>', description).default('.html');
+}
+
 export function makeLogsOption(description: string) {
   return new Option('--logs', description).default(false);
 }

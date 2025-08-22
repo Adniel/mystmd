@@ -73,6 +73,26 @@ You may specify `--site` if you only wish to build the site content. The first t
 myst build --site
 ```
 
+You may specify `--html` to build a static HTML site:
+
+```
+myst build --html
+```
+
+You can also customize the HTML file extension using `--html-extension`:
+
+```
+myst build --html --html-extension .aspx
+```
+
+Or set it in your `myst.yml` configuration file:
+
+```yaml
+site:
+  options:
+    html_file_suffix: .aspx
+```
+
 MyST can check for broken links when building a site. To report bad links:
 
 ```

@@ -45,6 +45,26 @@ To create a static HTML export of your MyST site, build it as HTML:
 myst build --html
 ```
 
+You can also customize the file extension for HTML files using the `--html-extension` option:
+
+```bash
+# Generate .aspx files instead of .html files
+myst build --html --html-extension .aspx
+
+# Generate .php files instead of .html files  
+myst build --html --html-extension .php
+```
+
+Alternatively, you can set the HTML file extension in your `myst.yml` configuration file under `site.options`:
+
+```yaml
+site:
+  options:
+    html_file_suffix: .aspx
+```
+
+This is useful when deploying to web servers that expect specific file extensions, such as ASP.NET servers that require `.aspx` files.
+
 After the build process, you can see the folder in `_build/html`, which has all assets for your static website. You can verify that the site is working correctly by starting a static web-server, for example,
 
 ```shell

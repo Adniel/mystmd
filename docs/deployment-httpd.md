@@ -19,6 +19,20 @@ then the resulting URL would be `http://www.example.com/my-project`.
 
 However, the links that are generated will not have `.html` as part of their HREFs. You will need to enable the [MultiViews](https://httpd.apache.org/docs/2.4/content-negotiation.html#multiviews) option in your Apache httpd configuration file to make these links work properly.
 
+For ASP.NET deployments, you can use the `--html-extension .aspx` option or set `html_file_suffix: .aspx` in your `myst.yml` site options to generate `.aspx` files instead of `.html` files:
+
+```bash
+myst build --html --html-extension .aspx
+```
+
+Or in your `myst.yml`:
+
+```yaml
+site:
+  options:
+    html_file_suffix: .aspx
+```
+
 For example, assuming your httpd configuration file lives in `/etc/httpd/conf/httpd.conf`, add the following stanza, and then reload/restart your Apache web server:
 
 ```

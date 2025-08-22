@@ -29,6 +29,7 @@ type FormatBuildOpts = {
   meca?: boolean;
   cff?: boolean;
   html?: boolean;
+  htmlExtension?: string;
   all?: boolean;
   force?: boolean;
   output?: string;
@@ -281,7 +282,11 @@ export async function build(session: ISession, files: string[], opts: BuildOpts)
       }
       if (opts.html) {
         buildLog.buildHtml = true;
-        await buildHtml(session, opts);
+        // Get html_file_suffix from site configuration if not provided via command line
+        const currentSiteConfig = selectors.selectCurrentSiteConfig(session.store.getState());
+        const htmlExtension =
+          opts.htmlExtension || currentSiteConfig?.options?.html_file_suffix || '.html';
+        await buildHtml(session, { ...opts, htmlExtension });
       } else {
         buildLog.buildSite = true;
         await buildSite(session, opts);
